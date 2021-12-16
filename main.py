@@ -1,6 +1,6 @@
 import random
 from flask import Flask, jsonify, render_template, request
-from flask_sqlalchemy import SQLAlchemy, _ident_func
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
@@ -24,6 +24,9 @@ class Cafe(db.Model):
     can_take_calls = db.Column(db.Boolean, nullable=False)
     coffee_price = db.Column(db.String(250), nullable=True)
 
+    def to_dict(self):
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
+
 
 @app.route("/")
 def home():
@@ -34,10 +37,7 @@ def home():
 def get_random_cafe():
     all_cafes = db.session.query(Cafe).all()
     random_cafe = random.choice(all_cafes)
-    rc = random_cafe
-    return jsonify(can_take_calls=rc.can_take_calls, coffee_price=rc.coffee_price, has_sockets=rc.has_sockets,
-                   has_toilet=rc.has_toilet, has_wifi=rc.has_wifi, id=rc.id, img_url=rc.img_url, location=rc.location,
-                   map_url=rc.map_url, name=rc.name, seats=rc.seats)
+    return jsonify(cafe=random_cafe.to_dict())
 
 
 # HTTP GET - Read Record
