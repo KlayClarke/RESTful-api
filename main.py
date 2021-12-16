@@ -36,8 +36,9 @@ def home():
     return render_template("index.html")
 
 
-@app.route('/search/<location>', methods=['GET'])
-def search_for_cafes(location):
+@app.route('/search', methods=['GET'])
+def search_for_cafes():
+    location = request.args.get('location')
     cafes_near_location = db.session.query(Cafe).filter_by(location=location.title()).all()
     cafes = [cafe.to_dict() for cafe in cafes_near_location]
     if len(cafes_near_location) == 0:
