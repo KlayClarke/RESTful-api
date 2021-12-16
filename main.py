@@ -36,6 +36,17 @@ def home():
     return render_template("index.html")
 
 
+@app.route('/search/<location>', methods=['GET'])
+def search_for_cafes(location):
+    cafes_near_location = db.session.query(Cafe).filter_by(location=location.title()).all()
+    cafes = [cafe.to_dict() for cafe in cafes_near_location]
+    if len(cafes_near_location) == 0:
+        error_json = {'error': {'Not Found': 'Sorry, we don\'t have a cafe at that location.'}}
+        return jsonify(error_json)
+    else:
+        return jsonify(cafes=cafes)
+
+
 @app.route('/all', methods=['GET'])
 def get_all_cafes():
     cafes = [cafe.to_dict() for cafe in all_cafes]
