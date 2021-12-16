@@ -28,14 +28,22 @@ class Cafe(db.Model):
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
 
+all_cafes = db.session.query(Cafe).all()
+
+
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
+@app.route('/all', methods=['GET'])
+def get_all_cafes():
+    cafes = [cafe.to_dict() for cafe in all_cafes]
+    return jsonify(cafes=cafes)
+
+
 @app.route('/random', methods=['GET'])
 def get_random_cafe():
-    all_cafes = db.session.query(Cafe).all()
     random_cafe = random.choice(all_cafes)
     return jsonify(cafe=random_cafe.to_dict())
 
