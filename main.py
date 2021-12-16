@@ -25,10 +25,6 @@ class Cafe(db.Model):
     coffee_price = db.Column(db.String(250), nullable=True)
 
 
-all_cafes = db.session.query(Cafe).all()
-num_of_cafes = len(all_cafes)
-
-
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -36,8 +32,8 @@ def home():
 
 @app.route('/random', methods=['GET'])
 def get_random_cafe():
-    random_num = random.randint(1, num_of_cafes)
-    random_cafe = db.session.query(Cafe).get(random_num)
+    all_cafes = db.session.query(Cafe).all()
+    random_cafe = random.choice(all_cafes)
     rc = random_cafe
     return jsonify(can_take_calls=rc.can_take_calls, coffee_price=rc.coffee_price, has_sockets=rc.has_sockets,
                    has_toilet=rc.has_toilet, has_wifi=rc.has_wifi, id=rc.id, img_url=rc.img_url, location=rc.location,
