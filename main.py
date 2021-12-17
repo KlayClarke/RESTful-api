@@ -53,7 +53,7 @@ def add_cafe():
                     coffee_price=request.form.get('coffee_price'))
     db.session.add(new_cafe)
     db.session.commit()
-    return jsonify(success_json)
+    return jsonify(success_json), 200
 
 
 @app.route('/search', methods=['GET'])
@@ -62,7 +62,7 @@ def search_for_cafes():
     cafes_near_location = db.session.query(Cafe).filter_by(location=location.title()).all()
     cafes = [cafe.to_dict() for cafe in cafes_near_location]
     if len(cafes_near_location) == 0:
-        return jsonify(error_json)
+        return jsonify(error_json), 404
     else:
         return jsonify(cafes=cafes)
 
