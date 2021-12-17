@@ -3,6 +3,8 @@ import random
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, jsonify, render_template, request
 
+correct_api_key = os.environ.get('PERSONAL_API_KEY')
+
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY')
 
@@ -32,8 +34,8 @@ class Cafe(db.Model):
 
 db.create_all()
 all_cafes = db.session.query(Cafe).all()
-success_json = {'response': {'success': 'Successfully added the new cafe.'}}
-error_json = {'error': {'Not Found': 'Sorry, we don\'t have a cafe at that location.'}}
+success_json = {'SUCCESS': {'success': 'Successfully added the new cafe.'}}
+error_json = {'ERROR': {'not found': 'Sorry, we don\'t have a cafe at that location.'}}
 
 
 @app.route("/")
@@ -88,6 +90,22 @@ def update_price(cafe_id):
         selected_cafe.coffee_price = request.args.get('new_price')
         db.session.commit()
         return jsonify(success_json), 200
+
+
+@app.route('/report-closed/<cafe_id>', methods=['DELETE'])
+def report_closed(cafe_id):
+    user_api_key = request.args.get('api_key')
+    if user_api_key == correct_api_key:
+        selected_cafe = db.session.query(Cafe).filter_by(id=cafe_id).first()
+        if selected_cafe is None:
+            return jsonify(error_json), 404
+        else:
+            db.session.delete(selected_cafe)
+            db.session.commit()
+            return jsonify({'SUCCESS': {'success': 'Cafe successfully deleted from database!'}}), 200
+    else:
+        return jsonify({'ERROR': {'incorrect api key': 'Cafe deletion failed - user unable to authorize self. Wrong '
+                                                       'api key!'}}), 403
 
 
 if __name__ == '__main__':
