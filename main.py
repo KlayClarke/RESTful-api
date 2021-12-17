@@ -3,7 +3,6 @@ import random
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, jsonify, render_template, request
 
-
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY')
 
@@ -33,6 +32,8 @@ class Cafe(db.Model):
 
 db.create_all()
 all_cafes = db.session.query(Cafe).all()
+success_json = {'response': {'success': 'Successfully added the new cafe.'}}
+error_json = {'error': {'Not Found': 'Sorry, we don\'t have a cafe at that location.'}}
 
 
 @app.route("/")
@@ -52,7 +53,6 @@ def add_cafe():
                     coffee_price=request.form.get('coffee_price'))
     db.session.add(new_cafe)
     db.session.commit()
-    success_json = {'response': {'success': 'Successfully added the new cafe.'}}
     return jsonify(success_json)
 
 
@@ -62,7 +62,6 @@ def search_for_cafes():
     cafes_near_location = db.session.query(Cafe).filter_by(location=location.title()).all()
     cafes = [cafe.to_dict() for cafe in cafes_near_location]
     if len(cafes_near_location) == 0:
-        error_json = {'error': {'Not Found': 'Sorry, we don\'t have a cafe at that location.'}}
         return jsonify(error_json)
     else:
         return jsonify(cafes=cafes)
@@ -78,6 +77,17 @@ def get_all_cafes():
 def get_random_cafe():
     random_cafe = random.choice(all_cafes)
     return jsonify(cafe=random_cafe.to_dict())
+
+
+@app.route('/update-price/<cafe_id>', methods=['PATCH'])
+def update_price(cafe_id):
+    selected_cafe = db.session.query(Cafe).filter_by(id=cafe_id).first()
+    if selected_cafe is None:
+        return jsonify(error_json)
+    else:
+        selected_cafe.coffee_price = request.args.get('new_price')
+        db.session.commit()
+        return jsonify(success_json)
 
 
 if __name__ == '__main__':
