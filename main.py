@@ -83,11 +83,11 @@ def get_random_cafe():
 def update_price(cafe_id):
     selected_cafe = db.session.query(Cafe).filter_by(id=cafe_id).first()
     if selected_cafe is None:
-        return jsonify(error_json)
+        return jsonify(error_json), 404
     else:
         selected_cafe.coffee_price = request.args.get('new_price')
         db.session.commit()
-        return jsonify(success_json)
+        return jsonify(success_json), 200
 
 
 if __name__ == '__main__':
